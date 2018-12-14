@@ -44,9 +44,9 @@ class StreamFig:
         :type omega: float
         :type time_width: positive int
         :type discrete: positive int
-        
+
         :Example:
-        
+
         >>> d = Drawing(alpha=0, omega=5.5)
         >>> d = Drawing(alpha=0, omega=6, discrete=2)
     """
@@ -60,7 +60,7 @@ class StreamFig:
     _node_unit = 600
     _offset_x = 3450
     _offset_y = 2250
-    
+
     _num_node_intervals = 0
     #?Is incremented by one if time marks are used too
     _num_time_intervals = 0
@@ -78,15 +78,20 @@ class StreamFig:
 
 
     def __init__(self, alpha=0.0, omega=10.0, time_width=500, discrete=0, directed=False):
-        print("""#FIG 3.2  Produced by xfig version 3.2.5b\n\
-Landscape\n\
-Center\n\
-Inches\n\
-Letter\n\
-100.00\n\
-Single\n\
--2\n\
-1200 2\n""")
+
+        # Initialize output string representing the figure in .fig format
+        self.output = ""
+
+        # Write header
+        self.output += "#FIG 3.2  Produced by xfig version 3.2.5b\n"
+        self.output += "Landscape\n"
+        self.output += "Center\n"
+        self.output += "Inches\n"
+        self.output += "Letter\n"
+        self.output += "100.00\n"
+        self.output += "Single\n"
+        self.output += "-2\n"
+        self.output += "1200 2\n"
 
         self._alpha = float(alpha)
         self._omega = float(omega)
@@ -128,7 +133,7 @@ Single\n\
         self._color_cpt += 1
         self._colors[name] = self._color_cpt
 
-        print("0 " + str(self._color_cpt) + " " + str(hex))
+        self.output += "0 {color} {hex}\n".format(color=self._color_cpt, hex=hex)
 
     def addNode(self, u, times=[], color=0, linetype=None):
         """
@@ -142,9 +147,9 @@ Single\n\
             :type u: str
             :type times: list of 2-tuples
             :type color: int or str
-        
+
             :Example:
-            
+
             >>> # Adds a node "v" from alpha to omega
             >>> d.addNode("v")
             >>> # Adds a node "v" from time 1 to time 2.5 and from time 4 to time 8.
@@ -166,16 +171,25 @@ Single\n\
         self._node_cpt += 1
         self._nodes[u] = self._node_cpt
 
-        print("4 0 " + str(color) + " 50 -1 0 30 0.0000 4 135 120 " + str(self._offset_x + int(self._alpha * self._time_unit) - 400) + " " + str(self._offset_y + 125 + int(self._node_cpt * self._node_unit)) + " " + str(u) + "\\001")
+        self.output += "4 0 {color} 50 -1 0 30 0.0000 4 135 120 {a} {b} {u} \\001\n".format(color=color,
+                                                                                            a=self._offset_x + int(self._alpha * self._time_unit) - 400,
+                                                                                            b=self._offset_y + 125 + int(self._node_cpt * self._node_unit),
+                                                                                            u=u)
 
-        
+
         if len(times) == 0:
             for i in drange(self._alpha, self._omega, self._discrete):
-                print("1 3 0 " + str(width) + " " + str(color) + " " + str(color) + " 49 -1 20 0.000 1 0.0000 " + str(self._offset_x + int(i * self._time_unit)) + " " + str(self._offset_y + self._nodes[u]*self._node_unit) + " 45 45 -6525 -2025 -6480 -2025")
+                self.output += "1 3 0 {width} {color} {color} 49 -1 20 0.000 1 0.0000 {a} {b} 45 45 -6525 -2025 -6480 -2025\n".format(width=width,
+                                                                                                                                      color=color,
+                                                                                                                                      a=self._offset_x + int(i * self._time_unit),
+                                                                                                                                      b=self._offset_y + self._nodes[u]*self._node_unit)
         else:
             for (i,j) in times:
                 for x in drange(i, j, self._discrete):
-                    print("1 3 0 " + str(width) + " " + str(color) + " " + str(color) + " 49 -1 20 0.000 1 0.0000 " + str(self._offset_x + int(x * self._time_unit)) + " " + str(self._offset_y + self._nodes[u]*self._node_unit) + " 45 45 -6525 -2025 -6480 -2025")
+                    self.output += "1 3 0 {width} {color} {color} 49 -1 20 0.000 1 0.0000 {a} {b} 45 45 -6525 -2025 -6480 -2025\n".format(width=width,
+                                                                                                                                          color=color,
+                                                                                                                                          a=self._offset_x + int(x * self._time_unit),
+                                                                                                                                          b=self._offset_y + self._nodes[u]*self._node_unit)
 
 
 
@@ -196,15 +210,26 @@ Single\n\
         self._node_cpt += 1
         self._nodes[u] = self._node_cpt
 
-        print("4 0 " + str(color) + " 50 -1 0 30 0.0000 4 135 120 " + str(self._offset_x + int(self._alpha * self._time_unit) - 400) + " " + str(self._offset_y + 125 + int(self._node_cpt * self._node_unit)) + " " + str(u) + "\\001")
+        self.output += "4 0 {color} 50 -1 0 30 0.0000 4 135 120 {a} {b} {u} \\001\n".format(color=color,
+                                                                                            a=self._offset_x + int(self._alpha * self._time_unit) - 400,
+                                                                                            b=self._offset_y + 125 + int(self._node_cpt * self._node_unit),
+                                                                                            u=u)
 
         if len(times) == 0:
-            print("""2 1 """ + str(linetype) + """ 2 """ + str(color) + """ 7 50 -1 -1 6.000 0 0 7 0 0 2\n \
-          """ + str(self._offset_x + int(self._alpha * self._time_unit)) + """ """ + str(self._offset_y + int(self._node_cpt * self._node_unit)) + """ """ + str(self._offset_x + int(self._omega * self._time_unit)) + """ """ + str(self._offset_y + int(self._node_cpt * self._node_unit)))
+            self.output += "2 1 {linetype} 2 {color} 7 50 -1 -1 6.000 0 0 7 0 0 2\n".format(linetype=linetype,
+                                                                                            color=color)
+            self.output += " {a} {b} {c} {d}\n".format(a=self._offset_x + int(self._alpha * self._time_unit),
+                                                       b=self._offset_y + int(self._node_cpt * self._node_unit),
+                                                       c=self._offset_x + int(self._omega * self._time_unit),
+                                                       d=self._offset_y + int(self._node_cpt * self._node_unit))
         else:
             for (i,j) in times:
-                print("""2 1 """ + str(linetype) + """ 2 """ + str(color) + """ 7 50 -1 -1 6.000 0 0 7 0 0 2\n \
-          """ + str(self._offset_x + int(i* self._time_unit)) + """ """ + str(self._offset_y + int(self._node_cpt * self._node_unit)) + """ """ + str(self._offset_x + int(j * self._time_unit)) + """ """ + str(self._offset_y + int(self._node_cpt * self._node_unit)))
+                self.output += "2 1 {linetype} 2 {color} 7 50 -1 -1 6.000 0 0 7 0 0 2\n".format(linetype=linetype,
+                                                                                                color=color)
+                self.output += " {a} {b} {c} {d}\n".format(a=self._offset_x + int(i* self._time_unit),
+                                                           b=self._offset_y + int(self._node_cpt * self._node_unit),
+                                                           c=self._offset_x + int(j * self._time_unit),
+                                                           d=self._offset_y + int(self._node_cpt * self._node_unit))
 
     def addLink(self, u, v, b, e, curving=0.0, color=0, height=0.5, width=3):
         """
@@ -214,8 +239,8 @@ Single\n\
             :param v: Node to be linked
             :param b: Start time of the link
             :param e: End time of the link
-            :param curving: Curving of the link. 0 corresponds to a straight link, 
-                            negative values will draw the link bent on the left, 
+            :param curving: Curving of the link. 0 corresponds to a straight link,
+                            negative values will draw the link bent on the left,
                             positive values will draw the link bent on the right
             :param color: the link's color (see addColor())
             :param height:  Fixes the position of the duration bar; values are between 0 and 1.
@@ -259,13 +284,19 @@ Single\n\
 
         for i in drange(b,e, self._discrete):
             # Draw circles for u and v
-            print("1 3 0 " + str(width) + " " + str(color) + " " + str(color) + " 49 -1 20 0.000 1 0.0000 " + str(self._offset_x + int(i * self._time_unit)) + " " + str(self._offset_y + self._nodes[u]*self._node_unit) + " 45 45 -6525 -2025 -6480 -2025")
-            print("1 3 0 " + str(width) + " " + str(color) + " " + str(color) + " 49 -1 20 0.000 1 0.0000 " + str(self._offset_x + int(i * self._time_unit)) + " " + str(self._offset_y + self._nodes[v]*self._node_unit) + " 45 45 -6525 -2025 -6480 -2025")
-            
+            self.output += "1 3 0 {width} {color} {color} 49 -1 20 0.000 1 0.0000 {a} {b} 45 45 -6525 -2025 -6480 -2025\n".format(width=width,
+                                                                                                                                  color=color,
+                                                                                                                                  a=self._offset_x + int(i * self._time_unit),
+                                                                                                                                  b=self._offset_y + self._nodes[u]*self._node_unit)
+            self.output += "1 3 0 {width} {color} {color} 49 -1 20 0.000 1 0.0000 {a} {b} 45 45 -6525 -2025 -6480 -2025\n".format(width=width,
+                                                                                                                                  color=color,
+                                                                                                                                  a=self._offset_x + int(i * self._time_unit),
+                                                                                                                                  b=self._offset_y + self._nodes[v]*self._node_unit)
+
             # Link them
             x1, y1 = self._offset_x + int(i * self._time_unit), self._offset_y + self._nodes[u]*self._node_unit
             x2 = self._offset_x + int((i + curving) * self._time_unit)
-            y2 = int((self._offset_y + self._nodes[v]*self._node_unit) - 0.5 * (self._nodes[v]-self._nodes[u]) * self._node_unit) 
+            y2 = int((self._offset_y + self._nodes[v]*self._node_unit) - 0.5 * (self._nodes[v]-self._nodes[u]) * self._node_unit)
             x3 = self._offset_x + int(i * self._time_unit)
             y3 = self._offset_y + self._nodes[v]*self._node_unit
 
@@ -276,12 +307,14 @@ Single\n\
                 dir_arg1 = "0"
                 dir_arg2 = "-1.000"
 
-            sys.stdout.write("3 2 0 " + str(width) + " " + str(color) + " 7 50 -1 -1 0.000 0 " + str(arrow_type) + " 3\n")
+            self.output += "3 2 0 {width} {color} 7 50 -1 -1 0.000 0 {arrow_type} 3\n".format(width=width,
+                                                                                              color=color,
+                                                                                              arrow_type=arrow_type)
             # arrow type
             if self._directed:
-                sys.stdout.write("1 1 3.00 90.00 150.00\n")
-            sys.stdout.write("%s %s %s %s %s %s\n" % (x1, y1, x2, y2, x3, y3))
-            sys.stdout.write("0.000 " + str(dir_arg2) + " 0.000\n")
+                self.output += "1 1 3.00 90.00 150.00\n"
+            self.output += "%s %s %s %s %s %s\n" % (x1, y1, x2, y2, x3, y3)
+            self.output += "0.000 {d} 0.000\n".format(d=dir_arg2)
 
             numnodes = abs(self._nodes[u] - self._nodes[v])
 
@@ -301,13 +334,19 @@ Single\n\
             arrow_type = "0 0"
 
         # Draw circles for u and v
-        print("1 3 0 " + str(width) + " " + str(color) + " " + str(color) + " 49 -1 20 0.000 1 0.0000 " + str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + self._nodes[u]*self._node_unit) + " 45 45 -6525 -2025 -6480 -2025")
-        print("1 3 0 " + str(width) + " " + str(color) + " " + str(color) + " 49 -1 20 0.000 1 0.0000 " + str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + self._nodes[v]*self._node_unit) + " 45 45 -6525 -2025 -6480 -2025")
-        
+        self.output += "1 3 0 {width} {color} {color} 49 -1 20 0.000 1 0.0000 {a} {b} 45 45 -6525 -2025 -6480 -2025\n".format(width=width,
+                                                                                                                              color=color,
+                                                                                                                              a=self._offset_x + int(b * self._time_unit),
+                                                                                                                              b=self._offset_y + self._nodes[u]*self._node_unit)
+        self.output += "1 3 0 {width} {color} {color} 49 -1 20 0.000 1 0.0000 {a} {b} 45 45 -6525 -2025 -6480 -2025\n".format(width=width,
+                                                                                                                              color=color,
+                                                                                                                              a=self._offset_x + int(b * self._time_unit),
+                                                                                                                              b=self._offset_y + self._nodes[v]*self._node_unit)
+
         # Link them
         x1, y1 = self._offset_x + int(b * self._time_unit), self._offset_y + self._nodes[u]*self._node_unit
         x2 = self._offset_x + int((b + curving) * self._time_unit)
-        y2 = int((self._offset_y + self._nodes[v]*self._node_unit) - 0.5 * (self._nodes[v]-self._nodes[u]) * self._node_unit) 
+        y2 = int((self._offset_y + self._nodes[v]*self._node_unit) - 0.5 * (self._nodes[v]-self._nodes[u]) * self._node_unit)
         x3 = self._offset_x + int(b * self._time_unit)
         y3 = self._offset_y + self._nodes[v]*self._node_unit
 
@@ -318,18 +357,24 @@ Single\n\
             dir_arg1 = "0"
             dir_arg2 = "-1.000"
 
-        sys.stdout.write("3 2 0 " + str(width) + " " + str(color) + " 7 50 -1 -1 0.000 0 " + str(arrow_type) + " 3\n")
+        self.output += "3 2 0 {width} {color} 7 50 -1 -1 0.000 0 {arrow_type} 3\n".format(width=width,
+                                                                                          color=color,
+                                                                                          arrow_type=arrow_type)
         # arrow type
         if self._directed:
-            sys.stdout.write("1 1 3.00 90.00 150.00\n")
-        sys.stdout.write("%s %s %s %s %s %s\n" % (x1, y1, x2, y2, x3, y3))
-        sys.stdout.write("0.000 " + str(dir_arg2) +" 0.000\n")
+            self.output += "1 1 3.00 90.00 150.00\n"
+        self.output += "%s %s %s %s %s %s\n" % (x1, y1, x2, y2, x3, y3)
+        self.output += "0.000 {d} 0.000\n".format(d=dir_arg2)
 
         numnodes = abs(self._nodes[u] - self._nodes[v])
 
         # Add duration
-        print("2 1 0 " + str(width) + " " + str(color) + " 7 50 -1 -1 0.000 0 0 -1 0 0 2")
-        print(str(self._offset_x + int((b + curving) * self._time_unit)) + " " + str(self._offset_y + int(self._nodes[u]*self._node_unit + (numnodes*self._node_unit*height))) + " " + str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + self._nodes[v]*self._node_unit - (numnodes*self._node_unit*(1-height))))
+        self.output += "2 1 0 {width} {color} 7 50 -1 -1 0.000 0 0 -1 0 0 2\n".format(width=width,
+                                                                                      color=color)
+        self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int((b + curving) * self._time_unit),
+                                                  b=self._offset_y + int(self._nodes[u]*self._node_unit + (numnodes*self._node_unit*height)),
+                                                  c=self._offset_x + int(e * self._time_unit),
+                                                  d=self._offset_y + self._nodes[v]*self._node_unit - (numnodes*self._node_unit*(1-height)))
 
     def addNodeCluster(self, u, times=[], color=0, width=200):
         """
@@ -357,23 +402,23 @@ Single\n\
         margin = int(width / 2)
 
         if color in self._colors:
-            color = self._colors[color]        
+            color = self._colors[color]
 
         if len(times) == 0:
             times = [(self._alpha, self._omega)]
 
         for (i,j) in times:
             (x1, y1) = ( self._offset_x + int(i * self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) - margin )
-            (x2, y2) = ( self._offset_x + int(j * self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) - margin ) 
-            (x3, y3) = ( self._offset_x + int(j * self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) + margin ) 
-            (x4, y4) = ( self._offset_x + int(i*self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) + margin ) 
+            (x2, y2) = ( self._offset_x + int(j * self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) - margin )
+            (x3, y3) = ( self._offset_x + int(j * self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) + margin )
+            (x4, y4) = ( self._offset_x + int(i*self._time_unit), self._offset_y + int(self._nodes[u]*self._node_unit) + margin )
 
-            print("2 2 0 0 0 " + str(color) + " 51 -1 20 0.000 0 0 -1 0 0 5")
-            print(str(x1) + " " + str(y1) + " " + str(x2) + " " + str(y2) + " " + str(x3) + " " + str(y3) + " " + str(x4) + " " + str(y4) + " " + str(x1) + " " + str(y1))
+            self.output += "2 2 0 0 0 {color} 51 -1 20 0.000 0 0 -1 0 0 5\n".format(color=color)
+            self.output += "{x1} {y1} {x2} {y2} {x3} {y3} {x4} {y4} {x1} {y1}\n".format(x1=x1, y1=y1, x2=x2, y2=y2, x3=x3, y3=y3, x4=x4, y4=y4)
 
     def addParameter(self, letter, value, color=0, width=1):
         """
-            Adds a parameter (like Delta=2). Multiple parameters will be placed at the top of the drawing, on each other's side 
+            Adds a parameter (like Delta=2). Multiple parameters will be placed at the top of the drawing, on each other's side
 
             :param letter: The letter for the parameter, in ascii (will be translated in greek, i.e. d gives delta, m gives mu, etc.)
             :param value: The value for the parameter
@@ -386,7 +431,7 @@ Single\n\
             :type width: int
 
             :Example:
-            
+
             >>> # Adds a parameter delta with value 3
             >>> d.addParameter("d", 3)
         """
@@ -404,14 +449,20 @@ Single\n\
         else:
             paramoffset = 200
 
-        print("2 1 " + str(color) + " " + str(width) + " 0 7 50 -1 -1 0.000 0 0 -1 1 1 2")
-        print("13 1 1.00 60.00 120.00")
-        print("13 1 1.00 60.00 120.00")
-        print(str(self._offset_x + (self._totalval_parameters * self._time_unit  + (self._num_parameters * paramoffset))) + " " + str(pos_segment_y) + " " + str(self._offset_x + int(value * self._time_unit) + (self._totalval_parameters * self._time_unit + (self._num_parameters * paramoffset))) + " " + str(pos_segment_y))
+        self.output += "2 1 {color} {width} 0 7 50 -1 -1 0.000 0 0 -1 1 1 2\n".format(color=color, width=width)
+        self.output += "13 1 1.00 60.00 120.00\n"
+        self.output += "13 1 1.00 60.00 120.00\n"
+        self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + (self._totalval_parameters * self._time_unit  + (self._num_parameters * paramoffset)),
+                                                  b=pos_segment_y,
+                                                  c=self._offset_x + int(value * self._time_unit) + (self._totalval_parameters * self._time_unit + (self._num_parameters * paramoffset)),
+                                                  d=pos_segment_y)
 
-        valtocenter = int(value * self._time_unit / 2) - (200 + (50 * max(int(value) - 2, 0))) 
+        valtocenter = int(value * self._time_unit / 2) - (200 + (50 * max(int(value) - 2, 0)))
 
-        print("4 0 0 50 -1 32 14 0.0000 4 180 375 " + str(self._offset_x + (self._totalval_parameters * self._time_unit + int(self._num_parameters * paramoffset)) + valtocenter)  + " " + str(pos_segment_y - 150)  + " " + str(letter) + " = " + str(value) + "\\001")
+        self.output += "4 0 0 50 -1 32 14 0.0000 4 180 375 {a} {b} {letter} = {val}\\001\n".format(a=self._offset_x + (self._totalval_parameters * self._time_unit + int(self._num_parameters * paramoffset)) + valtocenter,
+                                                                                                   b=pos_segment_y - 150,
+                                                                                                   letter=letter,
+                                                                                                   val=value)
         self._totalval_parameters += value
         self._num_parameters += 1
 
@@ -421,10 +472,14 @@ Single\n\
 
         pos_segment_x = self._offset_x - (150 * self._num_node_intervals) - 600
 
-        print("2 1 " + str(color) + " " + str(width) + " 0 7 50 -1 -1 0.000 0 0 -1 1 1 2")
-        print("13 1 1.00 60.00 120.00")
-        print("13 1 1.00 60.00 120.00")
-        print(str(pos_segment_x) + " " + str(self._offset_y + self._nodes[u] * self._node_unit) + " " + str(pos_segment_x) + " " + str(self._offset_y + self._nodes[v] * self._node_unit))
+        self.output += "2 1 {color} {width} 0 7 50 -1 -1 0.000 0 0 -1 1 1 2\n".format(color=color,
+                                                                                      width=width)
+        self.output += "13 1 1.00 60.00 120.00\n"
+        self.output += "13 1 1.00 60.00 120.00\n"
+        self.output += "{a} {b} {c} {d}\n".format(a=pos_segment_x,
+                                                  b=self._offset_y + self._nodes[u] * self._node_unit,
+                                                  c=pos_segment_x,
+                                                  d=self._offset_y + self._nodes[v] * self._node_unit)
         self._num_node_intervals += 1
 
 
@@ -451,19 +506,32 @@ Single\n\
         if color in self._colors:
             color = self._colors[color]
 
-        print("2 1 0 "+ str(width) + " " + str(color) + " 7 " + str(depth) + " -1 -1 0.000 0 0 -1 0 0 2")
-        print(str(self._offset_x + int(t * self._time_unit) - 50 ) + " " + str(self._offset_y + self._nodes[v]*self._node_unit - 50) + " " + str(self._offset_x + int(t * self._time_unit) + 50 ) + " " + str(self._offset_y + self._nodes[v]*self._node_unit + 50))
+        self.output += "2 1 0 {width} {color} 7 {depth} -1 -1 0.000 0 0 -1 0 0 2\n".format(width=width,
+                                                                                           color=color,
+                                                                                           depth=depth)
+        self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(t * self._time_unit) - 50,
+                                                  b=self._offset_y + self._nodes[v]*self._node_unit - 50,
+                                                  c=self._offset_x + int(t * self._time_unit) + 50,
+                                                  d=self._offset_y + self._nodes[v]*self._node_unit + 50)
 
-        print("2 1 0 "+ str(width) + " " + str(color) + " 7 " + str(depth) + " -1 -1 0.000 0 0 -1 0 0 2")
-        print(str(self._offset_x + int(t * self._time_unit) - 50 ) + " " + str(self._offset_y + self._nodes[v]*self._node_unit + 50) + " " + str(self._offset_x + int(t * self._time_unit) + 50 ) + " " + str(self._offset_y + self._nodes[v]*self._node_unit - 50))
+        self.output += "2 1 0 {width} {color} 7 {depth} -1 -1 0.000 0 0 -1 0 0 2\n".format(width=width,
+                                                                                           color=color,
+                                                                                           depth=depth)
+        self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(t * self._time_unit) - 50,
+                                                  b=self._offset_y + self._nodes[v]*self._node_unit + 50,
+                                                  c=self._offset_x + int(t * self._time_unit) + 50,
+                                                  d=self._offset_y + self._nodes[v]*self._node_unit - 50)
 
     def addTimeIntervalMark(self, b, e, color=0, width=1):
         pos_segment_y = self._offset_y + (self._nodes[self._first_node] * self._node_unit) - (100 * self._num_time_intervals) - 200
 
-        print("2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 1 1 2")
-        print("13 1 1.00 60.00 120.00")
-        print("13 1 1.00 60.00 120.00")
-        print(str(self._offset_x + b * self._time_unit) + " " + str(pos_segment_y) + " " + str(self._offset_x + (e * self._time_unit)) + " " + str(pos_segment_y))
+        self.output += "2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 1 1 2\n"
+        self.output += "13 1 1.00 60.00 120.00\n"
+        self.output += "13 1 1.00 60.00 120.00\n"
+        self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + b * self._time_unit,
+                                                  b=pos_segment_y,
+                                                  c=self._offset_x + (e * self._time_unit),
+                                                  d=pos_segment_y)
         self._num_time_intervals += 1
 
     def addPath(self, path, start, end, gamma=0, color=0, width=1, depth=51):
@@ -496,13 +564,13 @@ Single\n\
 
         if color in self._colors:
             color = self._colors[color]
-        
+
         t0 = path[0][0]
         u0 = path[0][1]
         xi = self._offset_x + int(start * self._time_unit)
         yi = self._offset_y + self._nodes[u0] * self._node_unit
-            
-        xj = self._offset_x + int((t0) * self._time_unit) 
+
+        xj = self._offset_x + int((t0) * self._time_unit)
         yj = self._offset_y + self._nodes[u0] * self._node_unit
 
 
@@ -511,10 +579,10 @@ Single\n\
         for (t,u,v) in path:
             xi = self._offset_x + int(t * self._time_unit)
             yi = self._offset_y + self._nodes[u] * self._node_unit
-            
-            xj = self._offset_x + int((t + gamma) * self._time_unit) 
+
+            xj = self._offset_x + int((t + gamma) * self._time_unit)
             yj = self._offset_y + self._nodes[v] * self._node_unit
-            
+
             coords.append((xi,yi))
             coords.append((xj,yj))
 
@@ -522,14 +590,17 @@ Single\n\
         vk = path[-1][2]
         xi = self._offset_x + int(tk * self._time_unit)
         yi = self._offset_y + self._nodes[vk] * self._node_unit
-            
-        xj = self._offset_x + int((end) * self._time_unit) 
+
+        xj = self._offset_x + int((end) * self._time_unit)
         yj = self._offset_y + self._nodes[vk] * self._node_unit
         coords.append((xi,yi))
         coords.append((xj,yj))
 
-        print("2 1 0 " + str(width) + " " + str(color) + " 7 " + str(depth) + " -1 -1 0.000 0 0 -1 0 0 " + str(len(coords)))
-        print(" ".join([ " ".join(map(str, i)) for i in coords ] ))
+        self.output += "2 1 0 {width} {color} 7 {depth} -1 -1 0.000 0 0 -1 0 0 {a}\n".format(width=width,
+                                                                                             color=color,
+                                                                                             depth=depth,
+                                                                                             a=len(coords))
+        self.output += (" ".join([ " ".join(map(str, i)) for i in coords ] ))
 
     def addRectangle(self, u, v, b, e, width=100, depth=51, color=0, border="", bordercolor=0, borderwidth=2):
         """
@@ -561,7 +632,7 @@ Single\n\
             :Example:
 
             >>> # Rectangle without border
-            >>> d.addRectangle("u", "v", 2, 6, color=11) 
+            >>> d.addRectangle("u", "v", 2, 6, color=11)
             >>> # Rectangle with border all around
             >>> d.addRectangle("u", "v", 2, 6, color=11, border="lrtb")
             >>> # Rectangle with borders except on top
@@ -577,22 +648,48 @@ Single\n\
 
         # Print border lrtb (if any)
         if "l" in border:
-            print("2 1 0 " + str(borderwidth) + " " + str(bordercolor) + " 7 48 -1 -1 0.000 0 0 -1 0 0 2")
-            print(str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + self._nodes[u] * self._node_unit - margin) + " " + str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + self._nodes[v] * self._node_unit + margin) + "\n")
+            self.output += "2 1 0 {borderwidth} {bordercolor} 7 48 -1 -1 0.000 0 0 -1 0 0 2\n".format(borderwidth=borderwidth,
+                                                                                                      bordercolor=bordercolor)
+            self.output += "{a} {b} {c} {d}\n".forat(a=self._offset_x + int(b * self._time_unit),
+                                                     b=self._offset_y + self._nodes[u] * self._node_unit - margin,
+                                                     c=self._offset_x + int(b * self._time_unit),
+                                                     d=self._offset_y + self._nodes[v] * self._node_unit + margin)
         if "r" in border:
-            print("2 1 0 " + str(borderwidth) + " " + str(bordercolor) + " 7 48 -1 -1 0.000 0 0 -1 0 0 2")
-            print(str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + self._nodes[u] * self._node_unit - margin) + " " + str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + self._nodes[v] * self._node_unit + margin) + "\n")
+            self.output += "2 1 0 {borderwidth} {bordercolor} 7 48 -1 -1 0.000 0 0 -1 0 0 2\n".format(borderwidth=borderwidth,
+                                                                                                      bordercolor=bordercolor)
+            self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(e * self._time_unit),
+                                                      b=self._offset_y + self._nodes[u] * self._node_unit - margin,
+                                                      c=self._offset_x + int(e * self._time_unit),
+                                                      d=self._offset_y + self._nodes[v] * self._node_unit + margin)
         if "t" in border:
-            print("2 1 0 " + str(borderwidth) + " " + str(bordercolor) + " 7 48 -1 -1 0.000 0 0 -1 0 0 2")
-            print(str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + self._nodes[u] * self._node_unit - margin) + " " + str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + self._nodes[u] * self._node_unit - margin))
+            self.output += "2 1 0 {borderwidth} {bordercolor} 7 48 -1 -1 0.000 0 0 -1 0 0 2\n".format(borderwidth=borderwidth,
+                                                                                                      bordercolor=bordercolor)
+            self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(b * self._time_unit),
+                                                      b=self._offset_y + self._nodes[u] * self._node_unit - margin,
+                                                      c=self._offset_x + int(e * self._time_unit),
+                                                      d=self._offset_y + self._nodes[u] * self._node_unit - margin)
         if "b" in border:
-            print("2 1 0 " + str(borderwidth) + " " + str(bordercolor) + " 7 48 -1 -1 0.000 0 0 -1 0 0 2")
-            print(str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + self._nodes[v] * self._node_unit + margin) + " " + str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + self._nodes[v] * self._node_unit + margin))
+            self.output += "2 1 0 {borderwidth} {bordercolor} 7 48 -1 -1 0.000 0 0 -1 0 0 2\n".format(borderwidth=borderwidth,
+                                                                                                      bordercolor=bordercolor)
+            self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(b * self._time_unit),
+                                                      b=self._offset_y + self._nodes[v] * self._node_unit + margin,
+                                                      c=self._offset_x + int(e * self._time_unit),
+                                                      d=self._offset_y + self._nodes[v] * self._node_unit + margin)
 
         if color > -1:
             # Print rectangle
-            print("2 2 0 0 0 " + str(color) + " " + str(depth) + " -1 20 0.000 0 0 -1 0 0 5")
-            print(str(self._offset_x + int(b * self._time_unit)) + " " + str(self._offset_y + int(self._nodes[u]*self._node_unit) - margin) + " " + str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + int(self._nodes[u]*self._node_unit) - margin) + " " + str(self._offset_x + int(e * self._time_unit)) + " " + str(self._offset_y + int(self._nodes[v]*self._node_unit) + margin) + " " + str(self._offset_x + int(b*self._time_unit)) + " " + str(self._offset_y + int(self._nodes[v]*self._node_unit) + margin) + " " + str(self._offset_x + int(b*self._time_unit)) + " " + str(self._offset_y + int(self._nodes[u]*self._node_unit) - margin) )
+            self.output += "2 2 0 0 0 {color} {depth} -1 20 0.000 0 0 -1 0 0 5\n".format(color=color,
+                                                                                         depth=depth)
+            self.output += "{a} {b} {c} {d} {e} {f} {g} {h} {i} {j}\n".format(a=self._offset_x + int(b * self._time_unit),
+                                                                              b=self._offset_y + int(self._nodes[u]*self._node_unit) - margin,
+                                                                              c=self._offset_x + int(e * self._time_unit),
+                                                                              d=self._offset_y + int(self._nodes[u]*self._node_unit) - margin,
+                                                                              e=self._offset_x + int(e * self._time_unit),
+                                                                              f=self._offset_y + int(self._nodes[v]*self._node_unit) + margin,
+                                                                              g=self._offset_x + int(b*self._time_unit),
+                                                                              h=self._offset_y + int(self._nodes[v]*self._node_unit) + margin,
+                                                                              i=self._offset_x + int(b*self._time_unit),
+                                                                              j=self._offset_y + int(self._nodes[u]*self._node_unit) - margin)
 
     def addTime(self, t, label="", width=1, font=12, color=0):
         """
@@ -605,7 +702,7 @@ Single\n\
             :param color: the line's color (XFIG defined or user-defined, see addColor() )
 
             :Example:
-        
+
             >>> # Adds a vertical line labelled "t" at time 2
             >>> d.addTime(2, "t")
         """
@@ -618,11 +715,20 @@ Single\n\
 
         linetype = 1
 
-        print("""2 1 """ + str(linetype) + """ """ + str(width) + """  """ + str(color) + """ 7 50 -1 -1 2.000 0 0 7 0 0 2\n \
-          """ + str(self._offset_x + int(t * self._time_unit)) + """ """ + str(self._offset_y + int(2 * self._node_unit - 150)) + """ """ + str(self._offset_x + int(t * self._time_unit)) + """ """ + str(self._offset_y + int(self._node_cpt * self._node_unit + 300)))
+        self.output += "2 1 {linetype} {width} {color} 7 50 -1 -1 2.000 0 0 7 0 0 2\n".format(linetype=linetype,
+                                                                                              width=width,
+                                                                                              color=color)
+        self.output += " {a} {b} {c} {d}\n".format(a=self._offset_x + int(t * self._time_unit),
+                                                   b=self._offset_y + int(2 * self._node_unit - 150),
+                                                   c=self._offset_x + int(t * self._time_unit),
+                                                   d=self._offset_y + int(self._node_cpt * self._node_unit + 300))
 
         # Add label if any
-        print("4 0 " + str(color) + " 50 -1 0 " + str(font) + " 0.0000 4 135 120 " + str(self._offset_x + int(t * self._time_unit) - (2 * font * len(label))) + " " + str(self._offset_y - 175 + int(2 * self._node_unit)) + " " + str(label) + "\\001")
+        self.output += "4 0 {color} 50 -1 0 {font} 0.0000 4 135 120 {a} {b} {c}\\001\n".format(color=color,
+                                                                                               font=font,
+                                                                                               a=self._offset_x + int(t * self._time_unit) - (2 * font * len(label)),
+                                                                                               b=self._offset_y - 175 + int(2 * self._node_unit),
+                                                                                               c=label)
 
     def addTimeLine(self, ticks=1, marks=None):
         """
@@ -637,7 +743,7 @@ Single\n\
             :type marks: list
 
             :Example:
-            
+
             >>> # Most common usage
             >>> d.addTimeLine(ticks=2)
             >>> # With one custom tick labeled "a" at time 2.5
@@ -645,7 +751,7 @@ Single\n\
         """
 
         timeline_y = self._node_cpt * self._node_unit + int(self._node_unit / 2)
-        
+
         vals = []
         i = self._alpha
         while i < self._omega:
@@ -654,7 +760,7 @@ Single\n\
             else:
                 vals.append((i,i))
             i = i+ticks
-        
+
         if marks is not None:
             # Ajouter/remplacer les valeurs (t, v)
             for (t,v) in marks:
@@ -670,21 +776,30 @@ Single\n\
         if self._discrete > 0:
             start, end = self._omega - 0.5, self._omega
         else:
-            start, end = self._alpha, self._omega     
+            start, end = self._alpha, self._omega
 
-        print("2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 1 0 2")
-        print("1 1 1.00 60.00 120.00")
-        print(str(self._offset_x + int(start * self._time_unit)) + " " + str(self._offset_y + timeline_y) + " " + str(self._offset_x + int(end * self._time_unit)) + " " + str(self._offset_y + timeline_y))
+        self.output += "2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 1 0 2\n"
+        self.output += "1 1 1.00 60.00 120.00\n"
+        self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(start * self._time_unit),
+                                                  b=self._offset_y + timeline_y,
+                                                  c=self._offset_x + int(end * self._time_unit),
+                                                  d=self._offset_y + timeline_y)
 
         # Time ticks
         for (i,j) in vals:
-            print("2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 0 0 2")
-            print(str(self._offset_x + int(i * self._time_unit)) + " " + str(self._offset_y + timeline_y) + " " + str(self._offset_x + int(i * self._time_unit)) + " " + str(self._offset_y + timeline_y + 30))
+            self.output += "2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 0 0 2\n"
+            self.output += "{a} {b} {c} {d}\n".format(a=self._offset_x + int(i * self._time_unit),
+                                                      b=self._offset_y + timeline_y,
+                                                      c=self._offset_x + int(i * self._time_unit),
+                                                      d=self._offset_y + timeline_y + 30)
             if i < self._omega - 1:
-                print("4 1 0 50 -1 0 20 0.0000 4 135 120 " + str(self._offset_x + int(i * self._time_unit)) + " " + str(self._offset_y + timeline_y + 250) + " " + str(j) + "\\001")
+                self.output += "4 1 0 50 -1 0 20 0.0000 4 135 120 {a} {b} {c}\\001\n".format(a=self._offset_x + int(i * self._time_unit),
+                                                                                             b=self._offset_y + timeline_y + 250,
+                                                                                             c=j)
 
         # Write "time"
-        print("4 2 0 50 -1 0 20 0.0000 4 135 120 " + str(self._offset_x + int(self._omega * self._time_unit)) + " " + str(self._offset_y + timeline_y + 250) + " time\\001")
+        self.output += "4 2 0 50 -1 0 20 0.0000 4 135 120 {a} {b} time\\001\n".format(a=self._offset_x + int(self._omega * self._time_unit),
+                                                                                      b=self._offset_y + timeline_y + 250)
 
     def __del__(self):
         # Adds white rectangle in background around first node (for EPS bounding box)
