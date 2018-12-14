@@ -5,6 +5,7 @@
 # Remplacer les print(...\n)
 # Gestion des erreurs (noeud non ajoute...)
 
+import os
 import sys
 
 
@@ -804,6 +805,16 @@ class StreamFig:
     def __del__(self):
         # Adds white rectangle in background around first node (for EPS bounding box)
         self.addRectangle(self._first_node, self._first_node, self._alpha, self._omega, width=300,depth=60, color=7)
+
+    def save(self, filename, format="png"):
+        """
+        Save figure to specified format.
+        """
+        # Dump the fig file
+        with open(filename + ".fig","w") as fp:
+            fp.write(self.output)
+        os.system("fig2dev -L {format} {filename}.fig > {filename}.{format}".format(format=format, filename=filename))
+
 
 # main
 if __name__ == '__main__':
